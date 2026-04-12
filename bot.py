@@ -8,6 +8,17 @@ import re
 from yt_dlp import YoutubeDL
 
 import threading
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def health_check():
+    return "Bot is running!", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
 
 # FFmpeg manzilini olish (Server yoki Lokal muhit uchun)
 try:
@@ -147,6 +158,9 @@ def handle_all_text(message):
             bot.reply_to(message, javob.text)
         except Exception as e:
             bot.reply_to(message, "❌ Savolingizga javob topishda xatolik bo‘ldi!")
+
+# Flask serverni alohida tarmoqda ishga tushirish
+threading.Thread(target=run_flask, daemon=True).start()
 
 bot.infinity_polling(timeout=90, long_polling_timeout=60)
 

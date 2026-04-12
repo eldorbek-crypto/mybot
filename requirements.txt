@@ -2,3 +2,4 @@ pyTelegramBotAPI
 google-generativeai
 yt-dlp
 imageio-ffmpeg
+flask

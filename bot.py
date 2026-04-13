@@ -51,31 +51,17 @@ def process_video_file(input_path, message, status_msg):
     output_path = f"output_hd_{int(time.time())}.mp4"
     
     try:
-        bot.edit_message_text("⚙️ Videoni 9:16 (GPU 🚀) formatga o'tkazyapman...", message.chat.id, status_msg.message_id)
+        bot.edit_message_text("⚙️ Videoni 9:16 formatida tayyorlayapman (Raketa 🚀)...", message.chat.id, status_msg.message_id)
         
-        # 1-urilish: Intel QSV (GPU) orqali o'ta tezkor renders
-        command_gpu = [
-            FFMPEG_PATH, '-hwaccel', 'qsv', '-i', input_path,
-            '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease:flags=bilinear,pad=1080:1920:(ow-iw)/2:(oh-ih)/2',
-            '-c:v', 'h264_qsv', '-global_quality', '25', '-preset', 'veryfast',
-            '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
-            '-c:a', 'copy', output_path
+        # CPU orqali tezkor render (Render serveriga mos, 720x1280 Crop va AAC audio)
+        command_cpu = [
+            FFMPEG_PATH, '-i', input_path,
+            '-vf', 'scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280',
+            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+            '-threads', '0', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+            '-c:a', 'aac', '-b:a', '128k', output_path
         ]
-        
-        try:
-            subprocess.run(command_gpu, check=True, capture_output=True)
-        except Exception as e:
-            print(f"GPU xatosi: {e}. CPU ga qaytilyapti...")
-            bot.edit_message_text("⚙️ GPU band yoki topilmadi, CPU orqali davom etyapman...", message.chat.id, status_msg.message_id)
-            # 2-urilish: Standart CPU orqali (Fallback)
-            command_cpu = [
-                FFMPEG_PATH, '-i', input_path,
-                '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease:flags=bilinear,pad=1080:1920:(ow-iw)/2:(oh-ih)/2',
-                '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
-                '-threads', '0', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
-                '-c:a', 'copy', output_path
-            ]
-            subprocess.run(command_cpu, check=True)
+        subprocess.run(command_cpu, check=True)
         
         # Tayyor videoni yuborish
         bot.edit_message_text("📤 Video tayyor! Yuboryapman...", message.chat.id, status_msg.message_id)
